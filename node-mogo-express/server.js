@@ -24,7 +24,7 @@ const start = async () => {
             console.log(`Server listen ${PORT} port`)
         })
     } catch (e) {
-        console.log(e)
+        // console.log(e)
     }
 }
 

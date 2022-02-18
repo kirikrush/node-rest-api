@@ -9,7 +9,7 @@ const ApiError = require('../exceptions/api-error');
 class UserService {
     async registration(email, password) {
         const candidate = await UserModel.findOne({email})
-        console.log(candidate)
+        // console.log(candidate)
         if (candidate) {
             throw ApiError.BadRequest( `Пользователь с почтой ${email} уже существует`)
         }
@@ -29,7 +29,7 @@ class UserService {
 
     async activate(activationLink) {
         const user = await UserModel.findOne({activationLink});
-        console.log(user)
+        // console.log(user)
         if (!user) {
             throw ApiError.BadRequest('Invalid link')
         }
@@ -40,8 +40,10 @@ class UserService {
 
     async login(email, password) {
         const user = await UserModel.findOne({email, isActive: true})
+        if(!user){
+            throw ApiError.BadRequest( 'Not existing user')
+        }
         const validPassword = bcrypt.compareSync(password, user.password);
-        console.log(validPassword)
         if (!user || !validPassword) {
             throw ApiError.BadRequest( 'Bad credentials')
         }

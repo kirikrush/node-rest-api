@@ -36,14 +36,13 @@ class UserController {
 
     async logout(req, res, next) {
         try {
-
         } catch (e) {
 
         }
     }
 
     async activate(req, res, next) {
-        console.log(req.params)
+        // console.log(req.params)
         try {
             const activationLink = req.params.link;
             await UserService.activate(activationLink);
@@ -63,9 +62,10 @@ class UserController {
 
     async getUsers(req, res, next) {
         try {
-            res.json(['123', '1234'])
+            // console.log(req.user)
+            res.status(200).json(['123', '1234'])
         } catch (e) {
-
+            next(e)
         }
     }
 }

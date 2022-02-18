@@ -13,8 +13,12 @@ module.exports = class ApiError extends Error {
     }
 
     static BadRequest(message, errors = []) {
-        console.log(message, errors)
+        // console.log(message, errors)
         return new ApiError(400, message, errors)
+    }
+
+    static PostIsExist(alias) {
+        return new ApiError((400, `Post with alias "${alias}" is exist`))
     }
 }
 

@@ -1,4 +1,5 @@
 const UserModel = require('../models/user-model');
+const RolesModel = require('../models/roles-model');
 const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const MailService = require('../service/mail-service');
@@ -11,19 +12,21 @@ class UserService {
         const candidate = await UserModel.findOne({email})
         // console.log(candidate)
         if (candidate) {
-            throw ApiError.BadRequest( `Пользователь с почтой ${email} уже существует`)
+            throw ApiError.BadRequest(`Пользователь с почтой ${email} уже существует`)
         }
         const hashPassword = await bcrypt.hash(password, 7)
         const activationLink = uuid.v4();
-        const user = await UserModel.create({email, password: hashPassword, activationLink})
+        const userRole = await RolesModel.findOne({alias: 'USER'});
+        const user = await UserModel.create({email, password: hashPassword, activationLink, role: userRole.id})
         await MailService.sendActivationMail(email, `http://localhost:3080/api/activate/${activationLink}`)
-        const payload = new UserDto(user);
+        const role = await RolesModel.findById(user.role);
+        const payload = new UserDto(user, role.alias);
         const tokens = TokenService.generateTokens({...payload})
         await TokenService.saveToken(payload.id, tokens.refreshToken)
-
+        console.log(user, role)
         return {
             ...tokens,
-            user: payload
+            user:{...payload}
         }
     }
 
@@ -38,16 +41,31 @@ class UserService {
 
     }
 
+    async user(id, withRole = false) {
+        const user = await UserModel.findById(id);
+        if (!user) {
+            return null
+        }
+        let role = false;
+        if (withRole) {
+            const userRole = await RolesModel.findById(user.role)
+            role = userRole.alias
+        }
+        const userData = new UserDto(user, role);
+        return {...userData}
+    }
+
     async login(email, password) {
         const user = await UserModel.findOne({email, isActive: true})
-        if(!user){
-            throw ApiError.BadRequest( 'Not existing user')
+        if (!user) {
+            throw ApiError.BadRequest('Not existing user')
         }
         const validPassword = bcrypt.compareSync(password, user.password);
         if (!user || !validPassword) {
-            throw ApiError.BadRequest( 'Bad credentials')
+            throw ApiError.BadRequest('Bad credentials')
         }
-        const payload = new UserDto(user);
+        const role = await RolesModel.findById(user.role);
+        const payload = new UserDto(user, role.alias);
         const tokens = TokenService.generateTokens({...payload})
         await TokenService.saveToken(payload.id, tokens.refreshToken)
 

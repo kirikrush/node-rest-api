@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const router = require('./routes/index')
 const errorMiddleware = require('./midllewares/error-midleware')
+const configureDatabase = require('./config/configureDatabase')
 const PORT = process.env.PORT || 5000;
 const app = express();
 
@@ -20,9 +21,12 @@ const start = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
-        app.listen(PORT, () => {
-            console.log(`Server listen ${PORT} port`)
-        })
+        const dbReady = await configureDatabase();
+        if(dbReady) {
+            app.listen(PORT, () => {
+                console.log(`Server listen ${PORT} port`)
+            })
+        }
     } catch (e) {
         // console.log(e)
     }

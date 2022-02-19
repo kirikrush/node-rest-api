@@ -20,13 +20,23 @@ class ArticleService {
         return {...payload}
     }
 
-    async deleteArticle(id) {
+    async deleteArticle(id, user) {
         const articleData = await ArticleModel.findOne({id})
         if (!articleData) {
             throw ApiError.BadRequest('Post is not exist')
         }
+
         const deleteResult = await ArticleModel.deleteOne({id})
         return deleteResult ? true : false
+    }
+
+    async findArticle(id) {
+        const articleData = await ArticleModel.findOne({id})
+        if (!articleData) {
+            throw ApiError.BadRequest('Post is not exist')
+        }
+        const article = new ArticleDto(articleData);
+        return {...article}
     }
 }
 

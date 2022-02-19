@@ -22,17 +22,22 @@ class ArticleController {
     async delete(req, res, next) {
         try {
             const {id} = req.body;
+            const {user} = req;
+            const article = await ArticleService.findArticle(id);
+            if(user.role!='ADMIN' && article.user!=user.id){
+                throw new ApiError(403, 'Cant delete articles')
+            }
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 throw ApiError.BadRequest('Ошибка при валидации', errors.array())
             }
-            const deletion = await ArticleService.deleteArticle(id);
-            if(deletion) {
+            const deletion = await ArticleService.deleteArticle(id, req.user);
+            if (deletion) {
                 return res.status(204).json({})
-            }
-            else{
+            } else {
                 throw ApiError.BadRequest('Ебать', errors.array())
             }
+            return res.status(204).json({})
         } catch (e) {
             next(e)
         }

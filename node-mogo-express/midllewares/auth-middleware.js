@@ -19,8 +19,7 @@ module.exports = async (req, res, next) => {
             throw ApiError.UnauthorizedError();
         }
         const userDataFromDB = await UserService.user(userData.id, true)
-        console.log(userDataFromDB)
-        if (!userDataFromDB?.isActivated) {
+        if (!userDataFromDB.isActive) {
             throw ApiError.UnauthorizedError();
         }
         req.user = userData;
